@@ -1,0 +1,31 @@
+name: Build Android APK (KivyMD)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'kivy_app/**'
+      - '.github/workflows/build-android.yml'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with Buildozer (Docker)
+        run: |
+          docker pull kivy/buildozer:latest
+          docker run --rm \
+            -v "${{ github.workspace }}/kivy_app":/workdir \
+            -w /workdir \
+            kivy/buildozer:latest \
+            buildozer android debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulador-apk
+          path: |
+            kivy_app/bin/*.apk
